@@ -9,3 +9,6 @@ edition = "2018"
 [dependencies]
 discord = "0.8.0"
 regex = "1.2.1"
+
+[target.armv7-unknown-linux-gnueabihf]
+linker = "arm-linux-gnueabihf-binutils"
