@@ -1,10 +1,11 @@
-extern crate discord;
-//extern crate regex;
+extern crate serenity;
 
-use discord::Discord;
-use discord::model::Event;
-//use regex::Regex;
-use std::env;
+use std::{env};
+
+use serenity::{
+    model::{channel::Message, gateway::Ready},
+    prelude::*,
+};
 
 fn uwu_replacer(original: String) -> String {
     let uwu_letters = "rl";
@@ -25,37 +26,48 @@ fn uwu_replacer(original: String) -> String {
     String::from(best_string)
 }
 
-fn main() {
-    // Log in to Discord using a bot token from the environment
-    let discord = Discord::from_bot_token(
-        &env::var("DISCORD_TOKEN").expect("Expected token"),
-    ).expect("login failed");
+struct Handler;
 
-    // Establish and use a websocket connection
-    let (mut connection, _) = discord.connect().expect("connect failed");
-    println!("Ready.");
-    loop {
-        match connection.recv_event() {
-            Ok(Event::MessageCreate(message)) => {
-                println!("{} says: {}", message.author.name, message.content);
+impl EventHandler for Handler {
+    fn message(&self, ctx: Context, msg: Message) {
+        println!("new message incoming!");
+        let mut uwud = String::new();
+        if msg.content.starts_with("!uwu") ||  msg.content.starts_with("@uwu") {
+            let mut reply = String::new();
+            let ref_of_message = &msg.content;
+            match ref_of_message.get(4..) {
+                Some(my_str) => reply += my_str,
+                None => reply += format!("{} uwud!", msg.author.name).as_str()
+            }
+            uwud += format!("{} ᴜwᴜ", uwu_replacer(reply)).as_str();
 
-                if message.content.starts_with("!uwu") ||  message.content.starts_with("@uwu") {
-                    let mut reply = String::new();
-                    let ref_of_message = &message.content;
-                    match ref_of_message.get(5..) {
-                        Some(my_str) => reply += my_str,
-                        None => reply += format!("{} uwud!", message.author.name).as_str()
-                    }
-                    let uwud = format!("{} ᴜwᴜ", uwu_replacer(reply));
-                    let _ = discord.send_message(message.channel_id, uwud.as_ref(), "", false);
-                }
+            // The create message builder allows you to easily create embeds and messages
+            // using a builder syntax.
+            // This example will create a message that says "Hello, World!", with an embed that has
+            // a title, description, three fields, and a footer.
+            let msg = msg.channel_id.send_message(&ctx.http, |m| {
+                m.content(uwud);
+                m
+            });
+
+            if let Err(why) = msg {
+                println!("Error sending message: {:?}", why);
             }
-            Ok(_) => {}
-            Err(discord::Error::Closed(code, body)) => {
-                println!("Gateway closed on us with code {:?}: {}", code, body);
-                break
-            }
-            Err(err) => println!("Receive error: {:?}", err)
         }
+    }
+
+    fn ready(&self, _: Context, ready: Ready) {
+        println!("{} is connected!", ready.user.name);
+    }
+}
+
+fn main() {
+    // Configure the client with your Discord bot token in the environment.
+    let token = env::var("DISCORD_TOKEN")
+        .expect("Expected a token in the environment");
+    let mut client = Client::new(&token, Handler).expect("Err creating client");
+
+    if let Err(why) = client.start() {
+        println!("Client error: {:?}", why);
     }
 }
