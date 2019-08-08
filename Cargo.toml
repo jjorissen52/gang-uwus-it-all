@@ -6,8 +6,18 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-serenity = "0.6.3"
-
-[target.armv7-unknown-linux-gnueabihf]
-linker = "arm-linux-gnueabihf-binutils"
+[dependencies.serenity]
+default-features = false
+features = [
+    "builder",
+    "client",
+    "framework",
+    "gateway",
+    "http",
+    "cache",
+    "model",
+    "standard_framework",
+    "utils",
+    "rustls_backend",
+]
+version = "0.6.3"
