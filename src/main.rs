@@ -7,7 +7,7 @@ use serenity::{
     prelude::*,
 };
 
-fn uwu_replacer(original: String) -> String {
+fn uwu_replacer(original: &String) -> String {
     let uwu_letters = "rl";
     let mut better_string = String::new();
     for c in original.chars() {
@@ -20,7 +20,9 @@ fn uwu_replacer(original: String) -> String {
     let best_string= better_string
         .replace("th", "d")
         .replace("ou", "ew")
-        .replace("qu", "qw");
+        .replace("qu", "qw")
+        .replace("uwu", "ᴜwᴜ")
+        .replace("uWu", "ᴜwᴜ");
     String::from(best_string)
 }
 
@@ -34,13 +36,8 @@ impl EventHandler for Handler {
                 && msg.content.contains("uwu") 
                 ||  msg.content.contains(" uWu ")             
             {
-            let mut reply = String::new();
-            let ref_of_message = &msg.content;
-            match ref_of_message.get(4..) {
-                Some(my_str) => reply += my_str,
-                None => reply += format!("{} uwud!", msg.author.name).as_str()
-            }
-            uwud += format!("<@{}> uwud! ♪┏(・o･)┛♪┗ ( ･o･) ┓♪ ᴜwᴜ \n {} ᴜwᴜ", msg.author.id, uwu_replacer(reply)).as_str();
+
+            uwud += format!("<@{}> uwud! ♪┏(・o･)┛♪┗ ( ･o･) ┓♪ ᴜwᴜ \n {}", msg.author.id, uwu_replacer(&msg.content)).as_str();
 
             // The create message builder allows you to easily create embeds and messages
             // using a builder syntax.
